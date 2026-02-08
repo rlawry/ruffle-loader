@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Seafloor Spreading Interactive (Ruffle Viewer)</title>
+  <meta name="description" content="Hosted viewer for the Windows to the Universe Seafloor Spreading interactive (Flash/SWF), played via Ruffle." />
+
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.35; }
+    header, footer { padding: 14px 16px; }
+    header { border-bottom: 1px solid rgba(127,127,127,.35); }
+    main { padding: 16px; display: grid; gap: 12px; }
+    .wrap { max-width: 1100px; margin: 0 auto; width: 100%; }
+    .playerShell {
+      width: 100%;
+      max-width: 980px;
+      aspect-ratio: 612 / 357; /* match original embed size */
+      background: #666;
+      border: 1px solid rgba(127,127,127,.45);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(127,127,127,.45);
+      background: rgba(127,127,127,.12);
+      cursor: pointer;
+    }
+    button:hover { background: rgba(127,127,127,.18); }
+    .note { opacity: .85; font-size: .95rem; }
+    a { color: inherit; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .95em; }
+  </style>
+
+  <!-- Ruffle configuration (set before loading ruffle.js) -->
+  <script>
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.RufflePlayer.config = {
+      autoplay: "on",
+      unmuteOverlay: "visible",
+      warnOnUnsupportedContent: true,
+      // This can help if the SWF references http:// assets while the page is https://
+      upgradeToHttps: true
+    };
+  </script>
+</head>
+
+<body>
+  <header class="wrap">
+    <strong>Seafloor Spreading Interactive</strong>
+    <div class="note">Flash (SWF) playback via Ruffle</div>
+  </header>
+
+  <main class="wrap">
+    <div class="controls" aria-label="Player controls">
+      <button id="btnRestart" type="button">Restart</button>
+      <button id="btnFullscreen" type="button">Fullscreen</button>
+      <a class="note" href="assets/seafloor_spreading_interactive.swf">Download SWF</a>
+    </div>
+
+    <div id="playerShell" class="playerShell" role="region" aria-label="Interactive player region">
+      <div id="playerHost" style="width:100%;height:100%"></div>
+    </div>
+
+    <div class="note">
+      If the animation does not run correctly, it may use Flash features that are not fully supported by Ruffle yet.
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <hr style="border:none;border-top:1px solid rgba(127,127,127,.35);margin:14px 0" />
+    <div class="note">
+      <strong>Attribution / citation:</strong>
+      This viewer is an alternate host for the “Seafloor Spreading Interactive” originally published on
+      <em>Windows to the Universe</em> (W2U), a project now managed by the National Earth Science Teachers Association (NESTA).
+      Original page:
+      <a href="https://www.windows2universe.org/earth/interior/seafloor_spreading_interactive.html" rel="noopener noreferrer" target="_blank">
+        windows2universe.org/earth/interior/seafloor_spreading_interactive.html
+      </a>.
+      Accessed 2026-02-08.
+    </div>
+    <div class="note">
+      Windows to the Universe is described as a NESTA-managed resource and historically transitioned from UCAR/NCAR to NESTA. This page uses the SWF locally; verify any redistribution/hosting rights before public deployment.
+    </div>
+  </footer>
+
+  <!-- Ruffle loader (CDN) -->
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+
+  <script>
+    const SWF_URL = "assets/seafloor_spreading_interactive.swf";
+
+    const host = document.getElementById("playerHost");
+    const shell = document.getElementById("playerShell");
+
+    function createAndLoadPlayer() {
+      host.innerHTML = "";
+
+      const ruffle = window.RufflePlayer?.newest?.();
+      if (!ruffle) {
+        host.innerHTML =
+          '<div style="padding:12px;color:#fff;background:#333;height:100%">' +
+          'Ruffle failed to load. Check your network or CDN access.' +
+          '</div>';
+        return null;
+      }
+
+      const player = ruffle.createPlayer();
+      player.style.width = "100%";
+      player.style.height = "100%";
+      host.appendChild(player);
+
+      player.load({ url: SWF_URL });
+      return player;
+    }
+
+    let player = createAndLoadPlayer();
+
+    document.getElementById("btnRestart").addEventListener("click", () => {
+      player = createAndLoadPlayer();
+    });
+
+    document.getElementById("btnFullscreen").addEventListener("click", async () => {
+      try {
+        if (!document.fullscreenElement) await shell.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (e) {
+        // ignore
+      }
+    });
+  </script>
+</body>
+</html>
